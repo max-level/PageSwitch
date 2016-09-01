@@ -10,9 +10,19 @@
 				this.init();
 			}
 			PageSwitch.prototype = {
-				init: function(){
-
-				}
+				// 说明： 初始化插件
+				// 实现： 初始化dom结构,布局，分页及绑定时间
+				init: function(){},
+				// 说明： 获取滑动页面数量
+				pagesCount : function() {},
+				// 说明： 获取滑动的宽度（横屏）或高度（竖屏滑动）
+				switchLength : function() {},
+				// 说明： 主要针对横屏情况进行页面布局
+				_initLayout : function() {},
+				// 说明： 实现分页的dom结构及css样式
+				_initPaging : function() {},
+				// 说明： 初始化插件时间
+				_initEvent : function() {}
 			}
 			return PageSwitch;
 		})();
