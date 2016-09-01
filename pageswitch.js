@@ -48,23 +48,7 @@
 
 	$(function(){
 		$("[data-PageSwitch]").PageSwitch();
-	})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	});
 
 })(jQuery);
 
