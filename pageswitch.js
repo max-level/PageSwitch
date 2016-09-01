@@ -12,15 +12,54 @@
 			PageSwitch.prototype = {
 				// 说明： 初始化插件
 				// 实现： 初始化dom结构,布局，分页及绑定时间
-				init: function(){},
+				init: function(){
+					var me = this;
+
+					me.selectors = me.settings.selectors;
+					me.sections = me.selectors.sections;
+					me.section = me.selectors.section;
+
+					me.direction = me.settings.direction == 'vertical' ? true : false;
+					me.pagesCount = me.pagesCount();
+					me.index = (me.settings.index >= 0 && me.settings.index < pagesCount) ? me.settings.index : 0;
+
+					if(!me.direction) {
+						me._initLayout();
+					}
+
+					if(me.settings.pagination){
+						me._initPaging();
+					}
+				},
 				// 说明： 获取滑动页面数量
-				pagesCount : function() {},
+				pagesCount : function() {
+					return me.section.length;
+				},
 				// 说明： 获取滑动的宽度（横屏）或高度（竖屏滑动）
 				switchLength : function() {},
 				// 说明： 主要针对横屏情况进行页面布局
-				_initLayout : function() {},
+				_initLayout : function() {
+					var me = this;
+					var width = (me.pagesCount * 100) + "%",
+						cellWidth = (100/me.pageCount).toFixed(2) + "%",
+						me.sections.width(width);
+						me.section.width(cellWidth).css("float", "left");
+				},
 				// 说明： 实现分页的dom结构及css样式
-				_initPaging : function() {},
+				_initPaging : function() {
+					var me = this,
+					pagesClass = me.selectors.page.substring(1),
+					activeClass = me.selectors.active.substring(1);
+					var pageHtml = "<ul class=" + pagesClass + ">";
+					for(var i=0; i<me.pagesCount;i++){
+						pageHtml += "<li></li>";
+					}
+					pageHtml += "</ul>";
+					me.element.append();
+					var pages = me.element.find(me.selectors.page);
+					me.pageItem = pages.find("li");
+					//me.pageItem.wq
+				},
 				// 说明： 初始化插件时间
 				_initEvent : function() {}
 			}
@@ -35,8 +74,6 @@
 				me.data("PageSwitch", instance);
 			}
 			if($.type(options) === "string") return instance[options]();
-
-
 		});
 	}
 	$.fn.PageSwitch.default = {
@@ -52,7 +89,7 @@
 		loop : false,
 		pagination : true,
 		keyboard : true,
-		direction : "vertical",
+		direction : "vertical", //horizontal
 		callback : ""
 	}
 
