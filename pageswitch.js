@@ -1,7 +1,20 @@
 (function($){
-	var privateFun = function(){
-		//
-	}
+	"use strict";
+
+	var _prefix = (function(temp){
+		var aPrefix = ["webkit", "Moz", "o", "ms"],
+			props = "";
+
+		for(var i in aPrefix){
+			props = aPrefix[i] + "Transition";
+			if(temp.style[ props] !== undefined){
+				return "-"+aPrefix[i].toLowerCase()+"-";
+			}
+		}
+
+		return false;
+	})(document.createElement("PageSwitch"));
+
 	$.fn.PageSwitch = function(options){
 		var PageSwitch = (function(){
 			function PageSwitch(element, options){
@@ -16,12 +29,12 @@
 					var me = this;
 
 					me.selectors = me.settings.selectors;
-					me.sections = me.selectors.sections;
-					me.section = me.selectors.section;
+					me.sections = me.element.find(me.selectors.sections);
+					me.section = me.sections.find(me.selectors.section);
 
 					me.direction = me.settings.direction == 'vertical' ? true : false;
 					me.pagesCount = me.pagesCount();
-					me.index = (me.settings.index >= 0 && me.settings.index < pagesCount) ? me.settings.index : 0;
+					me.index = (me.settings.index >= 0 && me.settings.index < me.pagesCount) ? me.settings.index : 0;
 
 					if(!me.direction) {
 						me._initLayout();
@@ -65,15 +78,15 @@
 				_initLayout : function() {
 					var me = this;
 					var width = (me.pagesCount * 100) + "%",
-						cellWidth = (100/me.pageCount).toFixed(2) + "%",
+						cellWidth = (100/me.pageCount).toFixed(2) + "%";
 						me.sections.width(width);
 						me.section.width(cellWidth).css("float", "left");
 				},
 				// 说明： 实现分页的dom结构及css样式
 				_initPaging : function() {
 					var me = this,
-					pagesClass = me.selectors.page.substring(1),
-					activeClass = me.selectors.active.substring(1);
+					pagesClass = me.selectors.page.substring(1);
+					me.activeClass = me.selectors.active.substring(1);
 					var pageHtml = "<ul class=" + pagesClass + ">";
 					for(var i=0; i<me.pagesCount;i++){
 						pageHtml += "<li></li>";
@@ -117,6 +130,48 @@
 								me.next();
 							}
 						});
+					}
+
+					$(window).resize(function(e){
+						var currentLength = me.switchLength(),
+							offset = me.settings.direction ? me.section.eq(me.index).offset().top : me.section.eq(me.index).offset().left;
+
+						if(Math.abs(offset) > currentLength/2 && me.index < (me.pagesCount - 1)){
+							me.index ++;
+						}
+						if(me.index){
+							me._scrollPage();
+						}
+					});
+
+					me.sections.on("transitionend webkitTransitionEnd oTransitionEnd otransitionend", function(){
+						if(me.settings.callback && $.type(me.settings.callback) == "function"){
+							me.settings.callback();
+						}
+					});
+				},
+
+				_scrollPage : function(){
+					var me = this,
+						dest = me.section.eq(me.index).position();
+
+					if(!dest) return;
+
+					if(_prefix){
+						me.sections.css(_prefix+"transition", "all " + me.settings.duration + "ms " + me.settings.easing);
+						var translate = me.direction ? "translateY(-"+dest.top+"px)" : "translateX(-"+dest.left+"px)";
+						me.sections.css(_prefix+"transform", translate);
+					}else{
+						var animateCss = me.direction ? {top:-dest.top} : {left:-dest.left};
+						me.sections.animate(animateCss, me.settings.duration, function(){
+							if(me.settings.callback && $.type(me.settings.callback) == "function"){
+								me.settings.callback();
+							}
+						});
+					}
+
+					if(me.settings.pagination){
+						me.pageItem.eq(me.index).addClass(me.activeClass).siblings("li").removeClass(me.activeClass);
 					}
 				}
 			}
